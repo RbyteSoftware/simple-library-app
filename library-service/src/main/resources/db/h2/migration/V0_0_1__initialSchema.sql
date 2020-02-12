@@ -1,0 +1,49 @@
+/**
+ * Tables section
+ */
+CREATE TABLE User (
+    id IDENTITY primary key,
+    login varchar(32) not null unique,
+    password varchar(255) not null
+);
+
+CREATE TABLE Role(
+    id IDENTITY primary key,
+    systemName varchar(128)
+);
+
+CREATE TABLE UserRoles(
+    userId bigint not null,
+    roleId bigint not null
+);
+
+CREATE TABLE Person (
+    id IDENTITY primary key,
+    userId bigint not null,
+    firstName varchar(255),
+    lastName varchar(255),
+    email varchar(255)
+);
+/**
+ * Keys section
+ */
+ALTER TABLE if EXISTS Person
+    ADD CONSTRAINT person_user_fk
+    FOREIGN KEY (userId) references `User`;
+
+ALTER TABLE if EXISTS UserRoles
+    ADD CONSTRAINT user_to_role_fk
+    FOREIGN KEY (userId) references `User`;
+
+ALTER TABLE if EXISTS UserRoles
+    ADD CONSTRAINT role_to_user_fk
+    FOREIGN KEY (roleId) references `Role`;
+
+/**
+ * Initial INSERT section
+ */
+INSERT INTO `User` (id, login, password) values (1, 'Admin', 'Admin'), (2, 'User', 'User');
+INSERT INTO `Role` (id, systemName) values (1, 'ROLE_ADMIN'), (2, 'ROLE_USER');
+INSERT INTO `UserRoles` (userId, roleId) values (1, 1), (2, 2);
+INSERT INTO `Person` (id, userId, firstName, lastName, email) values (default, 1, 'Михаил', 'Смирнов', 'm@io.ru'),
+(default, 1, 'Василий', 'Трубник', 't@io.ru');

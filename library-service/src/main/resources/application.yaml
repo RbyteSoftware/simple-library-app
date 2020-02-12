@@ -10,4 +10,4 @@ spring:
       maximum-pool-size: 20
     type: com.zaxxer.hikari.HikariDataSource
   flyway:
-    locations: /db/h2/migration
+    locations: classpath:db/h2/migration
