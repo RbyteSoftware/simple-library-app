@@ -1,3 +1,13 @@
-#
+# Server settings
 server:
   port: 8081
+  tomcat:
+    max-threads: 100
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+    type: com.zaxxer.hikari.HikariDataSource
+  flyway:
+    locations: /db/h2/migration
