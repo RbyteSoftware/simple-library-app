@@ -1,17 +1,16 @@
-package ru.simplelib.library.service.domain;
+package ru.simplelib.library.controller.transfer.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Role domain object
- *
  * @author Mikhail Yuzbashev
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
-    private String systemName;
+public class CredentialPairDto {
+    private String username;
+    private String password;
 }

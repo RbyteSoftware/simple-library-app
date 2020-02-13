@@ -1,4 +1,4 @@
-package ru.simplelib.library.service.domain;
+package ru.simplelib.library.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,8 +1,11 @@
-package ru.simplelib.library.service.domain;
+package ru.simplelib.library.domain;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.Id;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -16,9 +19,10 @@ import java.util.Set;
  */
 @Data
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
     @Id
     private Long id;
+    @Length(max = 32)
     private String login;
     private String password;
     private Person person;
@@ -64,4 +68,33 @@ public class User {
         this.roles.addAll(roleCollection);
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.roles;
+    }
+
+    @Override
+    public String getUsername() {
+        return login;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

@@ -42,8 +42,9 @@ ALTER TABLE if EXISTS UserRoles
 /**
  * Initial INSERT section
  */
-INSERT INTO `User` (id, login, password) values (1, 'Admin', 'Admin'), (2, 'User', 'User');
-INSERT INTO `Role` (id, systemName) values (1, 'ROLE_ADMIN'), (2, 'ROLE_USER');
-INSERT INTO `UserRoles` (userId, roleId) values (1, 1), (2, 2);
+INSERT INTO `User` (id, login, password) values (1, 'Admin', '$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96'),
+(2, 'User', '$2a$10$K2EYeGvHl62mvypIikz5luGT6AUvEQTtq7EjRhd1QxEI/2Yoz1HcG');
+INSERT INTO `Role` (id, systemName) values (1, 'ADMIN'), (2, 'USER');
+INSERT INTO `UserRoles` (userId, roleId) values (1, 1), (1, 2), (2, 2);
 INSERT INTO `Person` (id, userId, firstName, lastName, email) values (default, 1, 'Михаил', 'Смирнов', 'm@io.ru'),
-(default, 1, 'Василий', 'Трубник', 't@io.ru');
+(default, 2, 'Василий', 'Трубник', 't@io.ru');
