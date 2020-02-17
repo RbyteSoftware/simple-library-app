@@ -11,3 +11,12 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
   flyway:
     locations: classpath:db/h2/migration
+
+simplelib:
+  default:
+    onPage: 5
+
+logging:
+  level:
+    org.springframework.data: INFO
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG

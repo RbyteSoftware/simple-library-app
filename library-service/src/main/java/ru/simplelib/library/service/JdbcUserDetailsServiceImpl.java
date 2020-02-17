@@ -20,7 +20,6 @@ public class JdbcUserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        userDAO.findOneByLogin(username).ifPresent(user -> log.info("User {}", user));
         return userDAO.findOneByLogin(username).orElseThrow(() -> new UsernameNotFoundException("Bad credentials"));
     }
 }

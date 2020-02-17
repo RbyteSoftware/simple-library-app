@@ -1,9 +1,9 @@
 package ru.simplelib.library.repositories;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.simplelib.library.domain.User;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,7 +35,7 @@ public interface UserDAO {
      * @param pageable
      * @return
      */
-    Page<Iterable<User>> findAll(Pageable pageable);
+    List<User> findAll(Pageable pageable);
 
     /**
      * todo: write javadoc
@@ -44,5 +44,7 @@ public interface UserDAO {
      * @param pageable
      * @return
      */
-    Page<Iterable<User>> findAllByIds(Iterable<Long> ids, Pageable pageable);
+    List<User> findAllByIds(Iterable<Long> ids, Pageable pageable);
+
+    void save(User user);
 }

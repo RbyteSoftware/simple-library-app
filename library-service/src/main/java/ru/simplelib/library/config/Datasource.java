@@ -9,7 +9,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableJdbcRepositories
+@EnableJdbcRepositories("ru.simplelib.library.repositories")
 public class Datasource {
     @Bean
     public DataSource dataSource() {

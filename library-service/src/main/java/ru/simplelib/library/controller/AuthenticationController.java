@@ -69,6 +69,4 @@ public class AuthenticationController {
     private Set<String> extractAuthority(Authentication authentication) {
         return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
     }
-
-
 }
