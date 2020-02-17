@@ -11,15 +11,16 @@ import ru.simplelib.library.repositories.UserDAO;
 @Service
 @Slf4j
 public class JdbcUserDetailsServiceImpl implements UserDetailsService {
-    private UserDAO userDAO;
-
     @Autowired
-    public JdbcUserDetailsServiceImpl(UserDAO userDAO) {
-        this.userDAO = userDAO;
-    }
+    private UserDAO userDAO;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userDAO.findOneByLogin(username).orElseThrow(() -> new UsernameNotFoundException("Bad credentials"));
     }
+
+    public void setUserDAO(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
+
 }

@@ -2,36 +2,48 @@ package ru.simplelib.library.repositories;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsertOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.simplelib.library.domain.Person;
 import ru.simplelib.library.domain.Role;
 import ru.simplelib.library.domain.User;
+import ru.simplelib.library.exceptions.ServiceModificationException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class UserDAOImpl implements UserDAO {
+    // FIXME: do refactoring query`s to MappingSqlQuery wrappers coz it is thread-safe
     public static final String FIND_BY_LOGIN = "select * from User u " +
             "left join Person p on p.userId = u.Id " +
             "where u.login = ?";
     public static final String FIND_ALL = "select * from User u " +
             "left join Person p on p.userId = u.Id";
-    private static final String SELECT_ROLES = "select * from Role role " +
+    private static final String SELECT_USER_ROLES = "select * from Role role " +
             "left join UserRoles roles on role.Id = roles.roleId " +
             "where roles.userId = ?";
+    private static final String SELECT_ALL_ROLES = "select * from Role";
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+
+    Map<String, SimpleJdbcInsertOperations> insertTemplates;
 
     @Autowired
-    public UserDAOImpl(JdbcTemplate jdbcTemplate) {
+    public UserDAOImpl(JdbcTemplate jdbcTemplate, Map<String, SimpleJdbcInsertOperations> insertTemplates) {
         this.jdbcTemplate = jdbcTemplate;
+        this.insertTemplates = insertTemplates;
+        log.info("Insert templates {}", insertTemplates);
     }
 
     @Override
@@ -64,10 +76,76 @@ public class UserDAOImpl implements UserDAO {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
 
+    @Transactional
     @Override
-    public void save(User user) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+    public User create(User user) throws ServiceModificationException {
+        Long userId = insertUser(user);
+        user.setId(userId);
+        if (Objects.nonNull(user.getPerson())) {
+            insertPerson(user);
+        }
+        if (Objects.nonNull(user.getRoles()) && !user.getRoles().isEmpty()) {
+            insertUserRoles(user, user.getRoles());
+        }
+        return user;
     }
+
+    private void insertUserRoles(User user, Set<Role> incomingRoles) {
+        Map<String, Role> availableRoles = getAllRoles()
+                .stream().collect(Collectors.toMap(Role::getSystemName, e -> e));
+        List<Role> filtred = incomingRoles.stream()
+                .filter(it -> availableRoles.containsKey(it.getSystemName()))
+                .collect(Collectors.toList());
+        Set<Role> toAdd = new HashSet<>(filtred.size());
+        for (Role it : filtred) {
+            Role role = availableRoles.get(it.getSystemName());
+            insertUserRoleRef(user.getId(), role.getId());
+            toAdd.add(role);
+        }
+        user.setRoles(toAdd);
+    }
+
+    private void insertUserRoleRef(final Long userId, final Long roleId) {
+        try {
+            SimpleJdbcInsertOperations insertOperations = insertTemplates.get("roleRefInsert");
+            Objects.requireNonNull(insertOperations, "Could be Autowired userInsert operation bean");
+            insertOperations.execute(new MapSqlParameterSource()
+                    .addValue("userId", userId)
+                    .addValue("roleId", roleId)
+            );
+        } catch (DuplicateKeyException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    private void insertPerson(User user) {
+        SimpleJdbcInsertOperations insertOperations = insertTemplates.get("personInsert");
+        Objects.requireNonNull(insertOperations, "Could be Autowired userInsert operation bean");
+        Objects.requireNonNull(user.getId(), "Entity has no key reference");
+        Person person = user.getPerson();
+        insertOperations.executeAndReturnKey(new MapSqlParameterSource()
+                .addValue("userId", user.getId())
+                .addValue("firstName", person.getFirstName())
+                .addValue("lastName", person.getLastName())
+                .addValue("email", person.getEmail())
+        );
+    }
+
+    private Long insertUser(User user) throws ServiceModificationException {
+        try {
+            SimpleJdbcInsertOperations insertOperations = insertTemplates.get("userInsert");
+            Objects.requireNonNull(insertOperations, "Could be Autowired userInsert operation bean");
+
+            return Optional.of(insertOperations.executeAndReturnKey(new MapSqlParameterSource()
+                    .addValue("login", user.getLogin())
+                    .addValue("password", user.getPassword()))
+            ).get().longValue();
+
+        } catch (DuplicateKeyException e) {
+            throw new ServiceModificationException("Duplicate unique constrain");
+        }
+    }
+
 
     class UserRowMapper implements RowMapper<User> {
         private boolean extractRoles = false;
@@ -102,8 +180,16 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    private Set<Role> getAllRoles() {
+        return new HashSet<>(jdbcTemplate.query(SELECT_ALL_ROLES, (rs, rowNum) -> new Role(
+                        rs.getLong("id"),
+                        rs.getString("systemName")
+                )
+        ));
+    }
+
     private Set<Role> getUserRoles(User user) {
-        return new HashSet<>(jdbcTemplate.query(SELECT_ROLES, new Object[]{user.getId()}, (rs, rowNum) -> new Role(
+        return new HashSet<>(jdbcTemplate.query(SELECT_USER_ROLES, new Object[]{user.getId()}, (rs, rowNum) -> new Role(
                         rs.getLong("id"),
                         rs.getString("systemName")
                 )

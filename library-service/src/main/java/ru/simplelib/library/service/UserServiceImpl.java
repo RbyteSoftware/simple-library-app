@@ -1,9 +1,11 @@
 package ru.simplelib.library.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.simplelib.library.domain.User;
+import ru.simplelib.library.exceptions.ServiceModificationException;
 import ru.simplelib.library.repositories.UserDAO;
 import ru.simplelib.library.service.common.PageRequestBuilder;
 
@@ -18,6 +20,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserDAO userDAO;
 
+    @Autowired
     public UserServiceImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
     }
@@ -29,5 +32,10 @@ public class UserServiceImpl implements UserService {
                 .setRange(new PageRequestBuilder.BasicRangeMapper(perPage, pageNum))
                 .setSort(new PageRequestBuilder.BasicSortMapper(sort, order));
         return userDAO.findAll(pageRequestBuilder.build());
+    }
+
+    @Override
+    public User createUser(User user) throws ServiceModificationException {
+        return userDAO.create(user);
     }
 }

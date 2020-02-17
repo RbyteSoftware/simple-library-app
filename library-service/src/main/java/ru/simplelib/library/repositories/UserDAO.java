@@ -2,6 +2,7 @@ package ru.simplelib.library.repositories;
 
 import org.springframework.data.domain.Pageable;
 import ru.simplelib.library.domain.User;
+import ru.simplelib.library.exceptions.ServiceModificationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,5 +47,5 @@ public interface UserDAO {
      */
     List<User> findAllByIds(Iterable<Long> ids, Pageable pageable);
 
-    void save(User user);
+    User create(User user) throws ServiceModificationException;
 }

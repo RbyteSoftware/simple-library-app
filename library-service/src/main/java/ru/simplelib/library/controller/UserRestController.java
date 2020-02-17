@@ -1,10 +1,13 @@
 package ru.simplelib.library.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.simplelib.library.controller.converters.UserConverter;
+import ru.simplelib.library.controller.transfer.user.UserDto;
+import ru.simplelib.library.exceptions.ServiceModificationException;
 import ru.simplelib.library.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("users")
+@Slf4j
 public class UserRestController {
 
     private final UserConverter userConverter;
@@ -24,6 +28,19 @@ public class UserRestController {
     public UserRestController(UserConverter userConverter, UserService userService) {
         this.userConverter = userConverter;
         this.userService = userService;
+    }
+
+    @CrossOrigin
+    @RequestMapping(value = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> create(@RequestBody UserDto userDto) {
+        try {
+            userService.createUser(userConverter.to(userDto));
+        } catch (ServiceModificationException e) {
+            log.error(e.getMessage(), e);
+        }
+        // todo: add good response
+        return ResponseEntity.ok().build();
     }
 
     @CrossOrigin

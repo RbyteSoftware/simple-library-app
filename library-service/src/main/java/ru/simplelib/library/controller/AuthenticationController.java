@@ -55,6 +55,7 @@ public class AuthenticationController {
                 )));
             }
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponseDto(
                     false, Instant.now(), e.getMessage(), null
             ));

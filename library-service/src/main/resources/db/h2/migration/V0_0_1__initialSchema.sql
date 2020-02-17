@@ -14,12 +14,13 @@ CREATE TABLE IF NOT EXISTS Role(
 
 CREATE TABLE IF NOT EXISTS UserRoles(
     userId bigint not null,
-    roleId bigint not null
+    roleId bigint not null,
+    PRIMARY KEY(userId, roleId)
 );
 
 CREATE TABLE IF NOT EXISTS Person (
     id IDENTITY primary key,
-    userId bigint not null,
+    userId bigint not null unique,
     firstName varchar(255),
     lastName varchar(255),
     email varchar(255)
@@ -42,8 +43,8 @@ ALTER TABLE if EXISTS UserRoles
 /**
  * Initial INSERT section
  */
-INSERT INTO `User` (id, login, password) values (1, 'Admin', '$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96'),
-(2, 'User', '$2a$10$K2EYeGvHl62mvypIikz5luGT6AUvEQTtq7EjRhd1QxEI/2Yoz1HcG'), (3, 'Ben', '$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96');
+INSERT INTO `User` (id, login, password) values (default , 'Admin', '$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96'),
+(default , 'User', '$2a$10$K2EYeGvHl62mvypIikz5luGT6AUvEQTtq7EjRhd1QxEI/2Yoz1HcG'), (default , 'Ben', '$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96');
 INSERT INTO `Role` (id, systemName) values (1, 'ADMIN'), (2, 'USER');
 INSERT INTO `UserRoles` (userId, roleId) values (1, 1), (1, 2), (2, 2);
 INSERT INTO `Person` (id, userId, firstName, lastName, email) values (default, 1, 'Михаил', 'Смирнов', 'm@io.ru'),
