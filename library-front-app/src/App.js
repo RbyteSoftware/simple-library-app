@@ -1,33 +1,22 @@
+// in src/App.js
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {Admin, Resource} from 'react-admin';
+import authProvider from "./authProvider";
+import PostIcon from '@material-ui/icons/Book';
+import {BooksView} from './views/BooksView.js'
+import jsonServerProvider from 'ra-data-json-server';
+import russianMessages from 'ra-language-russian';
 
-function App() {
-    return (
-        < div
-    className = "App" >
-        < header
-    className = "App-header" >
-        < img
-    src = {logo}
-    className = "App-logo"
-    alt = "logo" / >
-        < p >
-        Edit < code > src / App.js < /code> and save to reload.
-        < /p>
-        < a
-    className = "App-link"
-    href = "https://reactjs.org"
-    target = "_blank"
-    rel = "noopener noreferrer"
-        >
-        Learn
-    React
-    < /a>
-    < /header>
-    < /div>
-)
-    ;
-}
+const dataProvider = jsonServerProvider('http://jsonplaceholder.typicode.com');
+
+const messages = {
+    'ru': russianMessages,
+};
+
+const App = () => (
+    <Admin dataProvider={dataProvider} authProvider={authProvider} messages={messages} title="Библиотека">
+        <Resource name="users" title="Книги" list={BooksView} icon={PostIcon}/>
+    </Admin>
+);
 
 export default App;
