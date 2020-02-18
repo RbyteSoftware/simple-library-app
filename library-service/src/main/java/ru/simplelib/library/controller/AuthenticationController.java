@@ -9,17 +9,19 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import ru.simplelib.library.config.auth.SimpleBase64AuthToken;
 import ru.simplelib.library.controller.transfer.auth.AuthenticationResponseDto;
 import ru.simplelib.library.controller.transfer.auth.BasicTokenWithRole;
 import ru.simplelib.library.controller.transfer.auth.CredentialPairDto;
+import ru.simplelib.library.domain.User;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -38,19 +40,16 @@ public class AuthenticationController {
         // FIXME: remove auth logic from Controller
         log.info("Authenticating user with username {}", credential.getUsername());
 
-        Authentication authToken = new UsernamePasswordAuthenticationToken(
+        Authentication auth = new UsernamePasswordAuthenticationToken(
                 credential.getUsername(), credential.getPassword());
 
         try {
-            Authentication authentication = authenticationManager.authenticate(authToken);
+            Authentication authentication = authenticationManager.authenticate(auth);
             if (authentication.isAuthenticated()) {
-                for (GrantedAuthority authority : authentication.getAuthorities()) {
-                    log.info("Have role {}", authority.getAuthority());
-                }
+                SecurityContextHolder.getContext().setAuthentication(authentication);
                 return ResponseEntity.ok(new AuthenticationResponseDto(
                         true, Instant.now(), "", new BasicTokenWithRole(
-                        // todo: generate token
-                        UUID.randomUUID().toString(),
+                        SimpleBase64AuthToken.getToken((User) authentication.getDetails()),
                         extractAuthority(authentication)
                 )));
             }
