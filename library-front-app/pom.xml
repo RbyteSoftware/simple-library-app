@@ -4,44 +4,81 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.sunrise.kpi</groupId>
+    <groupId>ru.simple-lib</groupId>
     <artifactId>front-react</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-
+    <properties>
+        <frontend-src-dir>${project.basedir}/src</frontend-src-dir>
+        <service-static-dir>${project.basedir}/../library-service/src/main/resources/templates</service-static-dir>
+        <node.version>v12.3.1</node.version>
+        <yarn.version>v1.16.0</yarn.version>
+        <frontend-maven-plugin.version>1.9.0</frontend-maven-plugin.version>
+    </properties>
     <build>
         <plugins>
+            <!-- front builder -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>${frontend-maven-plugin.version}</version>
+
                 <configuration>
-                    <installDirectory>target</installDirectory>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <yarnVersion>${yarn.version}</yarnVersion>
+                    <workingDirectory>${frontend-src-dir}</workingDirectory>
+                    <installDirectory>${project.build.directory}</installDirectory>
                 </configuration>
+
                 <executions>
                     <execution>
-                        <id>install node and npm</id>
+                        <id>install-frontend-tools</id>
                         <goals>
-                            <goal>install-node-and-npm</goal>
+                            <goal>install-node-and-yarn</goal>
                         </goals>
-                        <configuration>
-                            <nodeVersion>v10.8.0</nodeVersion>
-                            <npmVersion>6.2.0</npmVersion>
-                        </configuration>
                     </execution>
+
                     <execution>
-                        <id>npm install</id>
+                        <id>yarn-install</id>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>yarn</goal>
                         </goals>
                         <configuration>
                             <arguments>install</arguments>
                         </configuration>
                     </execution>
+
                     <execution>
-                        <id>webpack build</id>
+                        <id>build-frontend</id>
                         <goals>
-                            <goal>webpack</goal>
+                            <goal>yarn</goal>
                         </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- resource copy -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>position-react-build</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <outputDirectory>${service-static-dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/build</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

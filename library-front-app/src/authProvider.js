@@ -1,12 +1,9 @@
 // src/authProvider.js
-import React from "react";
-
 let port = 8081;
 let API_URL = window.location.protocol + '//' + window.location.hostname + ':' + port;
-
+// todo: do it better!
 const authProvider = {
     login: ({username, password}) => {
-        console.log(API_URL);
         const request = new Request(API_URL + '/authenticate', {
             method: 'POST',
             body: JSON.stringify({username, password}),
@@ -17,8 +14,13 @@ const authProvider = {
                 if (response.status < 200 || response.status >= 300)
                     throw new Error(response.statusText);
                 return response.json();
-            }).then(({token}) => localStorage.setItem('token', token))
-
+            }).then(({success, data}) => {
+                if (success) {
+                    localStorage.setItem('token', data.token)
+                    localStorage.setItem('permissions', data.roles)
+                } else
+                    throw new Error("В доступе отказано");
+            });
     },
     logout: params => {
         localStorage.removeItem('token');
