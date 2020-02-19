@@ -48,7 +48,7 @@ public class SimpleBase64AuthToken {
         String decoded = new String(Base64.getDecoder()
                 .decode(token));
         List<String> pair = Arrays.asList(decoded.split(":"));
-
+        // todo: fixes java.lang.ArrayIndexOutOfBoundsException: 1
         return new SimpleBase64AuthToken(pair.get(0), pair.get(1));
     }
 

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import ru.simplelib.library.domain.User;
 import ru.simplelib.library.repositories.UserDAO;
@@ -16,7 +15,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
 @Slf4j
 public class VerifyAccessInterceptor implements HandlerInterceptor {
     @Autowired
@@ -24,10 +22,10 @@ public class VerifyAccessInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // FIXME: create token storage
         String authorizationHeader = request.getHeader("Authorization");
         // get header from request
         if (Objects.nonNull(authorizationHeader)) {
-            log.info("extract token = {}", extractToken(authorizationHeader));
             SimpleBase64AuthToken token = SimpleBase64AuthToken.byToken(extractToken(authorizationHeader));
             Optional<User> userOpt = userDAO.findOneByLogin(token.getUsername());
             if (userOpt.isPresent()) {
@@ -45,6 +43,7 @@ public class VerifyAccessInterceptor implements HandlerInterceptor {
     }
 
     private String extractToken(String headerValue) {
+        // FIXME: need a good method for validate and extract token string
         return Arrays.asList(headerValue.split(" ")).get(1);
     }
 }

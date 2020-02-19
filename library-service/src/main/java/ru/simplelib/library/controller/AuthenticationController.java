@@ -10,10 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.simplelib.library.config.auth.SimpleBase64AuthToken;
 import ru.simplelib.library.controller.transfer.auth.AuthenticationResponseDto;
 import ru.simplelib.library.controller.transfer.auth.BasicTokenWithRole;
@@ -34,10 +31,10 @@ public class AuthenticationController {
         this.authenticationManager = authenticationManager;
     }
 
+    @CrossOrigin
     @RequestMapping(method = RequestMethod.POST, value = "/authenticate",
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> authenticate(@RequestBody CredentialPairDto credential) {
-        // FIXME: remove auth logic from Controller
         log.info("Authenticating user with username {}", credential.getUsername());
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
@@ -49,7 +46,7 @@ public class AuthenticationController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 return ResponseEntity.ok(new AuthenticationResponseDto(
                         true, Instant.now(), "", new BasicTokenWithRole(
-                        SimpleBase64AuthToken.getToken((User) authentication.getDetails()),
+                        SimpleBase64AuthToken.getToken((User) authentication.getPrincipal()),
                         extractAuthority(authentication)
                 )));
             }

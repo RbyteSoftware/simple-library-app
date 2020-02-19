@@ -70,6 +70,12 @@ public class UserDAOTest {
     }
 
     @Test
+    public void shouldReturnCount() {
+        Integer count = userDAO.getCount();
+        assertTrue(count > 0);
+    }
+
+    @Test
     public void shouldFindByLogin() {
         Optional<User> userOptional = userDAO.findOneByLogin("Admin");
         assertTrue(userOptional.isPresent());

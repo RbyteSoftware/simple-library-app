@@ -26,6 +26,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Integer getCount() {
+        return userDAO.getCount();
+    }
+
+    @Override
     public List<User> getList(Integer pageNum, Integer perPage, String sort, String order) {
         PageRequestBuilder pageRequestBuilder = new PageRequestBuilder()
                 .setDefaultRowOnPage(onPage)

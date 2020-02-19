@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.simplelib.library.controller.converters.UserConverter;
 import ru.simplelib.library.controller.transfer.user.UserDto;
 import ru.simplelib.library.exceptions.ServiceModificationException;
 import ru.simplelib.library.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
 /**
  * Rest controller for user
@@ -44,6 +46,7 @@ public class UserRestController {
     }
 
     @CrossOrigin
+    @Secured({"USER", "ADMIN"})
     @RequestMapping(value = "/list", method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,19 +56,32 @@ public class UserRestController {
             @RequestParam(value = "page", required = false) Integer pageNum,
             @RequestParam(value = "perPage", required = false) Integer perPage
     ) {
-        return ResponseEntity.ok(
-                userConverter.fromList(
-                        userService.getList(pageNum, perPage, sortFieldName, sortDirection)
-                )
-        );
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Range", "users " + pageNum + "-" + perPage + "/" + userService.getCount());
+        headers.add("Access-Control-Expose-Headers", "Content-Range");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(userConverter.fromList(
+                        userService.getList(pageNum, perPage, sortFieldName, sortDirection))
+                );
     }
 
     @CrossOrigin
-    @RequestMapping(value = "/list", method = RequestMethod.OPTIONS)
-    public ResponseEntity<?> options(HttpServletRequest request) {
-        // todo: get Authorization header, restore SecuritySession, get Authority`s
+    @RequestMapping(value = {"/{idCollection}"}, method = RequestMethod.DELETE)
+    public ResponseEntity<?> delete(@PathVariable("idCollection") String idCollection) {
+
+        return ResponseEntity.ok().build();
+    }
+
+
+    @CrossOrigin
+    @RequestMapping(value = {"/{idCollection}"}, method = RequestMethod.OPTIONS)
+    public ResponseEntity<?> options(@AuthenticationPrincipal Principal principal,
+                                     @PathVariable("idCollection") String idCollection) {
+        // todo: get Authority`s
         return ResponseEntity.ok().headers(new HttpHeaders() {{
-            add(HttpHeaders.ALLOW, "GET,CREATE,PUT,POST,OPTIONS");
+            add(HttpHeaders.ALLOW, "GET, CREATE, PUT, DELETE, POST, OPTIONS");
         }}).build();
     }
 

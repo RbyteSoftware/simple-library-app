@@ -48,4 +48,6 @@ public interface UserDAO {
     List<User> findAllByIds(Iterable<Long> ids, Pageable pageable);
 
     User create(User user) throws ServiceModificationException;
+
+    Integer getCount();
 }

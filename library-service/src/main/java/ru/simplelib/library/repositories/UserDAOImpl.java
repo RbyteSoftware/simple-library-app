@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserDAOImpl implements UserDAO {
     // FIXME: do refactoring query`s to MappingSqlQuery wrappers coz it is thread-safe
+    public static final String COUNT = "select count(*) from User";
     public static final String FIND_BY_LOGIN = "select * from User u " +
             "left join Person p on p.userId = u.Id " +
             "where u.login = ?";
@@ -88,6 +89,11 @@ public class UserDAOImpl implements UserDAO {
             insertUserRoles(user, user.getRoles());
         }
         return user;
+    }
+
+    @Override
+    public Integer getCount() {
+        return Objects.requireNonNull(jdbcTemplate.queryForObject(COUNT, Long.class)).intValue();
     }
 
     private void insertUserRoles(User user, Set<Role> incomingRoles) {

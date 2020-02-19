@@ -14,6 +14,11 @@ class SimpleBase64AuthTokenTest {
     }
 
     @Test
+    public void shouldTest() {
+        System.out.println(SimpleBase64AuthToken.getToken("Admin", "$2a$10$8/jsAvuu/5LNftzdUFhLte8FUD8OOT9Vh4UWbAsCEWGQwCz839b96"));
+    }
+
+    @Test
     public void shouldDecodeData() {
         SimpleBase64AuthToken token = SimpleBase64AuthToken.byToken("QWRtaW46QWRtaW4=");
         assertEquals(token.getUsername(), "Admin");

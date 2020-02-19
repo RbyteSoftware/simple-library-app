@@ -103,8 +103,8 @@ public class PageRequestBuilder {
         private Integer pageNum;
 
         public BasicRangeMapper(Integer onPage, Integer pageNum) {
-            this.onPage = Integer.valueOf(onPage);
-            this.pageNum = Integer.valueOf(pageNum);
+            this.onPage = onPage;
+            this.pageNum = pageNum;
         }
 
         @Override
