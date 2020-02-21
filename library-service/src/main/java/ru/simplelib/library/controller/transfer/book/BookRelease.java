@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BookRelease {
     private Boolean isRelease = true;
-    private Long userId;
+    private Boolean isOwner = false;
 }

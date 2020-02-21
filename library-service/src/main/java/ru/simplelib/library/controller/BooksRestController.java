@@ -1,5 +1,6 @@
 package ru.simplelib.library.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -7,6 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import ru.simplelib.library.controller.converters.BookConverter;
+import ru.simplelib.library.controller.transfer.NoContentResponseDto;
+import ru.simplelib.library.controller.transfer.book.PostEventDto;
+import ru.simplelib.library.exceptions.ServiceModificationException;
+import ru.simplelib.library.service.BookCardsService;
 import ru.simplelib.library.service.BookService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,10 +21,15 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("books")
+@Slf4j
 public class BooksRestController {
 
     @Autowired
     BookService bookService;
+
+    @Autowired
+    BookCardsService bookCardsService;
+
     @Autowired
     BookConverter bookConverter;
 
@@ -54,6 +64,23 @@ public class BooksRestController {
                 .body(bookConverter.fromList(
                         bookService.getList(pageNum, perPage, sortFieldName, sortDirection))
                 );
+    }
+
+    @CrossOrigin
+    @Secured({"USER", "ADMIN"})
+    @RequestMapping(value = "/events", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> postEvent(@RequestBody PostEventDto postEventDto) {
+        try {
+            bookCardsService.addCardEvent(postEventDto.getBookId(), postEventDto.getBookEvent());
+            return ResponseEntity.ok(new NoContentResponseDto(true, ""));
+        } catch (ServiceModificationException e) {
+            log.error(e.getMessage(), e);
+            return ResponseEntity.ok(
+                    new NoContentResponseDto(false, e.getMessage())
+            );
+        }
     }
 
     @CrossOrigin
