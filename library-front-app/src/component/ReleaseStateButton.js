@@ -18,55 +18,58 @@ SOFTWARE.
 */
 import PropTypes from "prop-types";
 import React, {Component} from "react";
+import {connect} from 'react-redux';
 import {Button, showNotification} from "react-admin";
 
 let port = 8081;
 let API_URL = window.location.protocol + '//' + window.location.hostname + ':' + port;
 
 class ReleaseStateButton extends Component {
+    // hardcode events
+    eventArray = ['TAKE_BOOK', 'RELEASE_BOOK'];
+    buttonLabels = ['Взять книжку', 'Отдать книжку'];
     state = {
+        isOwner: this.props.record.bookRelease.isOwner,
         isRelease: this.props.record.bookRelease.isRelease
     };
 
     changeButtonState = () => {
-        this.setState(!this.state.isRelease)
+        const changeState = !this.state.isRelease;
+        this.setState({isRelease: changeState, isOwner: true})
     };
 
     onClickAction = () => {
-        const {resource} = this.props;
-        // todo create body
+        const {resource, record} = this.props;
+        const event = this.eventArray[this.state.isRelease ? 0 : 1];
         const request = new Request(API_URL + "/" + resource + "/events", {
             method: 'POST',
-            body: {},
+            body: JSON.stringify({'bookEvent': event, 'bookId': record.id}),
             headers: new Headers({
                 'Content-Type': 'application/json',
-                'Authenticate': 'Basic ' + localStorage.getItem('token')
+                'Authorization': 'Basic ' + localStorage.getItem('token')
             })
         });
         fetch(request).then(response => {
             if (response.status < 200 || response.status >= 300) {
-                showNotification("Ошибка вызова API");
-                throw new Error("Ошибка вызова API");
+                return JSON.stringify({'success': false, 'error': 'Ошибка вызова API'})
             }
             return response.json();
         }).then(({success, error}) => {
-            if (success)
+            if (success) {
                 this.changeButtonState();
-            else
-                showNotification(error);
+                this.props.showNotification(!this.state.isRelease ? 'Книжка взята!' : 'Книга возвращена!');
+            } else
+                this.props.showNotification(error);
         });
     };
 
     render() {
-        const {isRelease} = this.state;
+        const {isRelease, isOwner} = this.state;
+        console.log(this.state);
+        const disable = !isRelease && !isOwner;
+        const currentLabel = this.buttonLabels[isRelease ? 0 : 1];
         return (
-            <div>
-                {!isRelease === false ? (
-                    <Button label='Взять книжку' onClick={this.onClickAction}/>
-                ) : (
-                    <Button label='Отдать книжку' onClick={this.onClickAction}/>
-                )}
-            </div>
+            <Button label={currentLabel} onClick={this.onClickAction} disabled={disable}/>
         )
     }
 }
@@ -78,4 +81,4 @@ ReleaseStateButton.propTypes = {
     record: PropTypes.object,
     resource: PropTypes.string.isRequired
 };
-export default (ReleaseStateButton);
+export default connect(null, {showNotification})(ReleaseStateButton);
