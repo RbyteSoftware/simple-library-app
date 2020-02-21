@@ -32,6 +32,7 @@ public class BookCardsServiceImpl implements BookCardsService {
     @Override
     @Transactional
     public void addCardEvent(Long bookId, BookEvent event) throws ServiceModificationException {
+        log.info("auth {}", SecurityContextHolder.getContext().getAuthentication());
         User user = userDAO.findOneByLogin((String)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal())
                 .orElse(null);
@@ -40,11 +41,13 @@ public class BookCardsServiceImpl implements BookCardsService {
         Optional<List<BookCardEvent>> eventsOpt = bookCardEventsRepository.findByBookId(bookId);
         if (eventsOpt.isPresent()) {
             List<BookCardEvent> events = eventsOpt.get();
-            BookCardEvent lastEvent = events.get(events.size() - 1);
-            boolean isOwner = Objects.equals(lastEvent.getCreatedBy(), user.getId());
-            boolean isLocked = Objects.equals(BookEvent.TAKE_BOOK, lastEvent.getEvent());
-            if (!isOwner && isLocked)
-                throw new ServiceModificationException("This book is locked by another User");
+            if (!events.isEmpty()) {
+                BookCardEvent lastEvent = events.get(events.size() - 1);
+                boolean isOwner = Objects.equals(lastEvent.getCreatedBy(), user.getId());
+                boolean isLocked = Objects.equals(BookEvent.TAKE_BOOK, lastEvent.getEvent());
+                if (!isOwner && isLocked)
+                    throw new ServiceModificationException("This book is locked by another User");
+            }
             bookCardEventsRepository.save(new BookCardEvent(bookId, event, user.getId()));
         }
     }

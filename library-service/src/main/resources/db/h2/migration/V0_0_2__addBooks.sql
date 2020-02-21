@@ -25,5 +25,5 @@ VALUES ('222-2222-2222', 'Agile Web Development with Rails', 'Sam Ruby, Dave Tho
        ('222-2222-2227', 'Spring Web Flow 2 Web Development', 'Sven Lüppken, Markus Stäuble');
 
 INSERT INTO BookCardEvents (bookId, createdBy, event, createdAt)
-values (2, 1, 'TAKE_BOOK', now()),
+values (2, 2, 'TAKE_BOOK', now()),
        (1, 1, 'TAKE_BOOK', now());

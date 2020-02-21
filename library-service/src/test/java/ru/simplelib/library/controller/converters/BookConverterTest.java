@@ -3,8 +3,12 @@ package ru.simplelib.library.controller.converters;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.simplelib.library.controller.transfer.book.BookDto;
 import ru.simplelib.library.domain.*;
+import ru.simplelib.library.service.AuthenticationService;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -13,15 +17,20 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.BDDMockito.given;
 
 @Slf4j
+@SpringBootTest
 class BookConverterTest {
-
+    @MockBean
+    AuthenticationService authenticationService;
+    @Autowired
     private BookConverter bookConverter;
 
     @BeforeEach
     public void setUp() {
-        bookConverter = new BookConverter();
+        given(authenticationService.getUserFromSession())
+                .willReturn(createAndFillUser());
     }
 
     @Test
@@ -61,6 +70,16 @@ class BookConverterTest {
         LocalDateTime now = LocalDateTime.now();
         int randomHour = ThreadLocalRandom.current().nextInt(1, 5);
         return (iteration % 2 == 0) ? now.plusHours(randomHour) : now.minusHours(randomHour);
+    }
+
+    private User createAndFillUser() {
+        User user = new User(
+                "testLogin",
+                "testPwd",
+                new Person()
+        );
+        user.setId(1L);
+        return user;
     }
 
     private User getSurrogateUser() {

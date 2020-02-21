@@ -2,8 +2,6 @@ package ru.simplelib.library.controller.converters;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import ru.simplelib.library.controller.transfer.book.BookDto;
 import ru.simplelib.library.controller.transfer.book.BookRelease;
@@ -11,7 +9,7 @@ import ru.simplelib.library.domain.Book;
 import ru.simplelib.library.domain.BookCardEvent;
 import ru.simplelib.library.domain.BookEvent;
 import ru.simplelib.library.domain.User;
-import ru.simplelib.library.repositories.UserDAO;
+import ru.simplelib.library.service.AuthenticationService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,17 +17,15 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class BookConverter implements Converter<Book, BookDto> {
-
     @Autowired
-    UserDAO userDAO;
+    AuthenticationService authenticationService;
 
     @Override
     public BookDto from(Book book) {
         Long userId = null;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Optional<User> currentUser = userDAO.findOneByLogin((String) authentication.getPrincipal());
-        if (currentUser.isPresent()) {
-            userId = currentUser.get().getId();
+        User user = authenticationService.getUserFromSession();
+        if (Objects.nonNull(user)) {
+            userId = user.getId();
         }
         BookDto bookDto = new BookDto();
         bookDto.setId(book.getId());
