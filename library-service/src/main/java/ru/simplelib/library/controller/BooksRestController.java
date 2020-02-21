@@ -1,8 +1,13 @@
 package ru.simplelib.library.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import ru.simplelib.library.controller.converters.BookConverter;
+import ru.simplelib.library.service.BookService;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -12,6 +17,12 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("books")
 public class BooksRestController {
+
+    @Autowired
+    BookService bookService;
+    @Autowired
+    BookConverter bookConverter;
+
 
     @CrossOrigin
     @RequestMapping(path = "/{id}", method = RequestMethod.PUT)
@@ -23,11 +34,26 @@ public class BooksRestController {
     }
 
 
-    private HttpHeaders getHttpContentRange(Integer page, Integer perPage, Integer records) {
+    @CrossOrigin
+    @Secured({"USER", "ADMIN"})
+    @RequestMapping(value = "/list", method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> userList(
+            @RequestParam(value = "sort", required = false) String sortFieldName,
+            @RequestParam(value = "order", required = false) String sortDirection,
+            @RequestParam(value = "page", required = false) Integer pageNum,
+            @RequestParam(value = "perPage", required = false) Integer perPage
+    ) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Range", "assumptions " + page + "-" + perPage + "/" + records);
+        headers.add("Content-Range", "users " + pageNum + "-" + perPage + "/" + bookService.getBookCount());
         headers.add("Access-Control-Expose-Headers", "Content-Range");
-        return headers;
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(bookConverter.fromList(
+                        bookService.getList(pageNum, perPage, sortFieldName, sortDirection))
+                );
     }
 
     @CrossOrigin

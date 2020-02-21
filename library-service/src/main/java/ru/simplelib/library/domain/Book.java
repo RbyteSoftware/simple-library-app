@@ -1,5 +1,6 @@
 package ru.simplelib.library.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -17,6 +18,7 @@ import java.util.Set;
  */
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Table("Book")
 public class Book {
     @Id
@@ -26,7 +28,7 @@ public class Book {
     private String author;
     private String title;
     @MappedCollection(idColumn = "bookId", keyColumn = "id")
-    Set<BookCardEvents> bookCardEvents = new LinkedHashSet<>();
+    Set<BookCardEvent> bookCardEvents = new LinkedHashSet<>();
 
     public Book(String isbNumber, String author, String title) {
         this.isbNumber = isbNumber;

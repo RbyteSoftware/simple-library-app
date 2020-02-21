@@ -3,7 +3,6 @@ package ru.simplelib.library.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -20,18 +19,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table("BookCardEvents")
-public class BookCardEvents {
+public class BookCardEvent {
     @Id
     private Long id;
+    @Column("bookId")
+    private Long bookId;
     private BookEvent event;
-    @CreatedBy
     @Column("createdBy")
-    private User createdBy;
+    private Long createdBy;
     @CreatedDate
     @Column("createdAt")
     private LocalDateTime createdAt;
 
-    public BookCardEvents(BookEvent event) {
+    public BookCardEvent(Long bookId, BookEvent event, Long createdBy) {
+        this.bookId = bookId;
         this.event = event;
+        this.createdBy = createdBy;
     }
 }

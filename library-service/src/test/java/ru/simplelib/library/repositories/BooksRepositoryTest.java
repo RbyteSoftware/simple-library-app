@@ -10,15 +10,16 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.simplelib.library.config.Datasource;
 import ru.simplelib.library.config.JdbcAuditorAwareConfiguration;
-import ru.simplelib.library.domain.Book;
-import ru.simplelib.library.domain.BookCardEvents;
-import ru.simplelib.library.domain.BookEvent;
+import ru.simplelib.library.domain.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {Datasource.class, JdbcAuditorAwareConfiguration.class})
@@ -37,13 +38,22 @@ class BooksRepositoryTest {
     }
 
     @Test
+    public void shouldGetBookById() {
+        Optional<Book> book = booksRepository.findById(1L);
+        assertTrue(book.isPresent());
+
+        log.info("book {}", book);
+    }
+
+
+    @Test
     public void shouldCreateBookRecord() {
         Book book = new Book("2-266-11156-6", "Robert Martin", "Clean code");
-        Set<BookCardEvents> cardEventsSet = Stream.of(createEvent(BookEvent.TAKE_BOOK), createEvent(BookEvent.RELEASE_BOOK))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+//        Set<BookCardEvent> cardEventsSet = Stream.of(createEvent(BookEvent.TAKE_BOOK), createEvent(BookEvent.RELEASE_BOOK))
+//                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         book.setBookCardEvents(
-                cardEventsSet
+                null
         );
         Book savedBook = booksRepository.save(book);
         log.info("Saved book = {}", savedBook);
@@ -51,19 +61,25 @@ class BooksRepositoryTest {
     }
 
     @Test
-    public void shouldCardEventAuditAware() {
+    public void getCount() {
+        log.info("books count {}", booksRepository.getCount());
+    }
 
-        Set<BookCardEvents> cardEventsSet = Stream.of(createEvent(BookEvent.TAKE_BOOK), createEvent(BookEvent.RELEASE_BOOK))
+    @Test
+    public void shouldCardEventAudit() {
+        User user = new User("111", "111", new Person());
+        user.setId(1L);
+        Book book = new Book(1L, "222-222-2222-22", "JUnit5", "Test Book", null);
+        Set<BookCardEvent> cardEventsSet = Stream.of(createEvent(BookEvent.TAKE_BOOK, book, user), createEvent(BookEvent.RELEASE_BOOK, book, user))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        List<BookCardEvents> bookCardEvents = (List<BookCardEvents>) bookCardEventsRepository.saveAll(cardEventsSet);
-
-        log.info("audit = {}", bookCardEvents);
+        List<BookCardEvent> bookCardEvents = (List<BookCardEvent>) bookCardEventsRepository.saveAll(cardEventsSet);
+        log.info("book cards = {}", bookCardEvents);
 
     }
 
-    private BookCardEvents createEvent(BookEvent event) {
-        return new BookCardEvents(event);
+    private BookCardEvent createEvent(BookEvent event, Book book, User user) {
+        return new BookCardEvent(book.getId(), event, user.getId());
     }
 
 }

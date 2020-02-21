@@ -2,6 +2,7 @@ package ru.simplelib.library.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsertOperations;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 @Configuration
 @EnableJdbcRepositories("ru.simplelib.library.repositories")
-public class Datasource {
+public class Datasource extends AbstractJdbcConfiguration {
 
     @Bean
     public Map<String, SimpleJdbcInsertOperations> insertMap() {
